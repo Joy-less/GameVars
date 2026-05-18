@@ -11,7 +11,7 @@ using System.Text.Json.Serialization.Metadata;
 namespace GameVars;
 
 /// <summary>
-/// A saveable collection of variables.
+/// A collection of variables that can be saved to JSON.
 /// </summary>
 /// <remarks>
 /// Note: Collections are <b>NOT</b> thread-safe.
@@ -54,12 +54,12 @@ public sealed class GameVarCollection : IReadOnlyCollection<KeyValuePair<string,
     public int Count => GameVars.Count;
 
     /// <summary>
-    /// Creates a new saveable collection of variables which is empty.
+    /// Creates a collection of variables which is empty.
     /// </summary>
     public GameVarCollection() {
     }
     /// <summary>
-    /// Creates a new saveable collection of variables with the given initial variables.
+    /// Creates a collection of variables with the given initial variables.
     /// </summary>
     public GameVarCollection(JsonObject GameVars) {
         SetGameVars(GameVars);
