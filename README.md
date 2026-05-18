@@ -1,5 +1,7 @@
 # GameVars
 
+[![NuGet](https://img.shields.io/nuget/v/GameVars.svg)](https://www.nuget.org/packages/GameVars)
+
 Saveable collections of variables.
 
 ## Usage
