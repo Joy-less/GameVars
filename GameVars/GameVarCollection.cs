@@ -16,7 +16,7 @@ namespace GameVars;
 /// <remarks>
 /// Note: Collections are <b>NOT</b> thread-safe.
 /// </remarks>
-public sealed class GameVarCollection : IEnumerable<KeyValuePair<string, JsonNode?>> {
+public sealed class GameVarCollection : IReadOnlyCollection<KeyValuePair<string, JsonNode?>> {
     /// <summary>
     /// Invoked whenever a game var in this collection is changed.<br/>
     /// Note: The value may be the same as before.
@@ -47,6 +47,11 @@ public sealed class GameVarCollection : IEnumerable<KeyValuePair<string, JsonNod
             TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
         };
     }
+
+    /// <summary>
+    /// Gets the number of game vars in the collection.
+    /// </summary>
+    public int Count => GameVars.Count;
 
     /// <summary>
     /// Creates a new saveable collection of variables which is empty.
