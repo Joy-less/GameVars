@@ -44,7 +44,6 @@ public sealed class GameVarCollection : IReadOnlyCollection<KeyValuePair<string,
             NewLine = "\n",
             ReadCommentHandling = JsonCommentHandling.Skip,
             Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-            TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
         };
     }
 
@@ -88,6 +87,15 @@ public sealed class GameVarCollection : IReadOnlyCollection<KeyValuePair<string,
     /// <summary>
     /// Gets the value of the given game var, or a value created from <paramref name="DefaultValueFactory"/>.
     /// </summary>
+    public JsonNode? GetGameVar(string GameVarName, Func<JsonNode?> DefaultValueFactory) {
+        if (GameVars.TryGetPropertyValue(GameVarName, out JsonNode? Value)) {
+            return Value;
+        }
+        return DefaultValueFactory();
+    }
+    /// <summary>
+    /// Gets the value of the given game var, or a value created from <paramref name="DefaultValueFactory"/>.
+    /// </summary>
 #if NET
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     [RequiresDynamicCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
@@ -108,13 +116,13 @@ public sealed class GameVarCollection : IReadOnlyCollection<KeyValuePair<string,
         return DefaultValueFactory();
     }
     /// <summary>
-    /// Gets the value of the given game var, or a value created from <paramref name="DefaultValueFactory"/>.
+    /// Gets the value of the given game var, or <paramref name="DefaultValue"/>.
     /// </summary>
-    public JsonNode? GetGameVar(string GameVarName, Func<JsonNode?> DefaultValueFactory) {
+    public JsonNode? GetGameVar(string GameVarName, JsonNode? DefaultValue) {
         if (GameVars.TryGetPropertyValue(GameVarName, out JsonNode? Value)) {
             return Value;
         }
-        return DefaultValueFactory();
+        return DefaultValue;
     }
     /// <summary>
     /// Gets the value of the given game var, or <paramref name="DefaultValue"/>.
@@ -139,13 +147,12 @@ public sealed class GameVarCollection : IReadOnlyCollection<KeyValuePair<string,
         return DefaultValue;
     }
     /// <summary>
-    /// Gets the value of the given game var, or <paramref name="DefaultValue"/>.
+    /// Sets the value of the given game var.
     /// </summary>
-    public JsonNode? GetGameVar(string GameVarName, JsonNode? DefaultValue) {
-        if (GameVars.TryGetPropertyValue(GameVarName, out JsonNode? Value)) {
-            return Value;
-        }
-        return DefaultValue;
+    public void SetGameVar(string GameVarName, JsonNode? Value) {
+        GameVars[GameVarName] = Value;
+
+        OnGameVarChanged?.Invoke(GameVarName);
     }
     /// <summary>
     /// Sets the value of the given game var.
@@ -164,14 +171,6 @@ public sealed class GameVarCollection : IReadOnlyCollection<KeyValuePair<string,
     public void SetGameVar<T>(string GameVarName, T Value, JsonTypeInfo<T> TypeInfo) {
         JsonNode? NodeValue = JsonSerializer.SerializeToNode(Value, TypeInfo);
         SetGameVar(GameVarName, NodeValue);
-    }
-    /// <summary>
-    /// Sets the value of the given game var.
-    /// </summary>
-    public void SetGameVar(string GameVarName, JsonNode? Value) {
-        GameVars[GameVarName] = Value;
-
-        OnGameVarChanged?.Invoke(GameVarName);
     }
     /// <summary>
     /// Returns an enumerator that enumerates through the game vars in the collection.

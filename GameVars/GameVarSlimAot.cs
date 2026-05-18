@@ -1,17 +1,12 @@
-﻿#if NET
-using System.Diagnostics.CodeAnalysis;
-#endif
+﻿using System.Text.Json.Serialization.Metadata;
 
 namespace GameVars;
 
 /// <summary>
-/// An interface to a game var in a <see cref="GameVarCollection"/>, with no caching and no event handlers.
+/// An interface to a game var in a <see cref="GameVarCollection"/>, with no caching and no event handlers.<br/>
+/// Unlike <see cref="GameVarSlim{T}"/>, <see cref="GameVarSlimAot{T}"/> is trimmable due to using <see cref="JsonTypeInfo{T}"/>.
 /// </summary>
-#if NET
-[RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
-[RequiresDynamicCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
-#endif
-public sealed class GameVarSlim<T> : IGameVar<T> {
+public sealed class GameVarSlimAot<T> : IGameVar<T> {
     /// <summary>
     /// The collection of game vars containing the game var.
     /// </summary>
@@ -24,25 +19,36 @@ public sealed class GameVarSlim<T> : IGameVar<T> {
     /// A function returning a default value for the game var.
     /// </summary>
     public Func<T> DefaultValueFactory { get; }
+    /// <summary>
+    /// Metadata about the type of the game var.
+    /// </summary>
+    public JsonTypeInfo<T> TypeInfo { get; }
 
     /// <summary>
     /// Creates a new interface to a game var in a <see cref="GameVarCollection"/>.
     /// </summary>
-    public GameVarSlim(GameVarCollection Collection, string Name, Func<T> DefaultValueFactory) {
+    public GameVarSlimAot(GameVarCollection Collection, string Name, Func<T> DefaultValueFactory, JsonTypeInfo<T> TypeInfo) {
         this.Collection = Collection;
         this.Name = Name;
         this.DefaultValueFactory = DefaultValueFactory;
+        this.TypeInfo = TypeInfo;
     }
     /// <summary>
     /// Gets the value of the given game var, or a value created from <see cref="DefaultValueFactory"/>.
     /// </summary>
     public T Get() {
-        return Collection.GetGameVar(Name, DefaultValueFactory);
+        return Collection.GetGameVar(Name, DefaultValueFactory, TypeInfo);
     }
     /// <summary>
     /// Sets the value of the given game var.
     /// </summary>
     public void Set(T Value) {
-        Collection.SetGameVar(Name, Value);
+        Collection.SetGameVar(Name, Value, TypeInfo);
+    }
+    /// <summary>
+    /// Sets the value of the given game var.
+    /// </summary>
+    public void Set(T Value, JsonTypeInfo<T> TypeInfo) {
+        Collection.SetGameVar(Name, Value, TypeInfo);
     }
 }

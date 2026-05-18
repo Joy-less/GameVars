@@ -29,6 +29,11 @@ public class UnitTest1 {
         Collection.GetGameVar("bird", () => "").ShouldBe("chirp");
         Animals.Increment();
         Animals.Get().ShouldBe(3);
+
+        GameVar<HashSet<int>> Numbers = new(Collection, "numbers", () => [1, 2, 3]);
+        Numbers.Get().ShouldBe([1, 2, 3]);
+        Numbers.Set([1]);
+        Numbers.Get().ShouldBe([1]);
     }
     [Fact]
     public void GameVarCollectionGetGameVarsTest() {
