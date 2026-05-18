@@ -1,4 +1,9 @@
-﻿namespace GameVars;
+﻿#if NET
+using System.Diagnostics.CodeAnalysis;
+#endif
+using System.Text.Json.Serialization.Metadata;
+
+namespace GameVars;
 
 /// <summary>
 /// An interface to a game var in a <see cref="GameVarCollection"/>, with caching and event handlers.
@@ -16,6 +21,10 @@ public sealed class GameVar<T> : IGameVar<T> {
     /// A function returning a default value for the game var.
     /// </summary>
     public Func<T> DefaultValueFactory { get; }
+    /// <summary>
+    /// Metadata about the type of the game var.
+    /// </summary>
+    public JsonTypeInfo<T> TypeInfo { get; }
 
     private T CachedValue;
 
@@ -33,14 +42,23 @@ public sealed class GameVar<T> : IGameVar<T> {
     /// Creates a new interface to a game var in a <see cref="GameVarCollection"/>,
     /// with a cached value of the value of the given game var, or a value created from <paramref name="DefaultValueFactory"/>.
     /// </summary>
-    public GameVar(GameVarCollection Collection, string Name, Func<T> DefaultValueFactory) {
+    public GameVar(GameVarCollection Collection, string Name, Func<T> DefaultValueFactory, JsonTypeInfo<T> TypeInfo) {
         this.Collection = Collection;
         this.Name = Name;
         this.DefaultValueFactory = DefaultValueFactory;
+        this.TypeInfo = TypeInfo;
 
-        CachedValue = Collection.GetGameVar(Name, DefaultValueFactory);
+        CachedValue = Collection.GetGameVar(Name, DefaultValueFactory, TypeInfo);
 
         Collection.OnGameVarChanged += OnGameVarChangedHandler;
+    }
+    /// <inheritdoc cref="GameVar{T}(GameVarCollection, string, Func{T}, JsonTypeInfo{T})"/>
+#if NET
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
+    [RequiresDynamicCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
+#endif
+    public GameVar(GameVarCollection Collection, string Name, Func<T> DefaultValueFactory)
+        : this(Collection, Name, DefaultValueFactory, JsonTypeInfo.CreateJsonTypeInfo<T>(GameVarCollection.DefaultJsonOptions)) {
     }
     /// <summary>
     /// Clears the event handlers from the collection.
@@ -60,12 +78,12 @@ public sealed class GameVar<T> : IGameVar<T> {
     public void Set(T Value) {
         CachedValue = Value;
 
-        Collection.SetGameVar(Name, Value);
+        Collection.SetGameVar(Name, Value, TypeInfo);
     }
 
     private void OnGameVarChangedHandler(string GameVarName) {
         if (GameVarName == Name) {
-            CachedValue = Collection.GetGameVar(Name, DefaultValueFactory);
+            CachedValue = Collection.GetGameVar(Name, DefaultValueFactory, TypeInfo);
             OnChanged?.Invoke();
         }
     }

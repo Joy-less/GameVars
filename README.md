@@ -2,7 +2,7 @@
 
 [![NuGet](https://img.shields.io/nuget/v/GameVars.svg)](https://www.nuget.org/packages/GameVars)
 
-Saveable collections of variables.
+Collections of variables that can be saved to JSON.
 
 ## Usage
 
@@ -11,11 +11,11 @@ GameVarCollection Collection = new();
 Collection.SetGameVar("cat", "meow");
 Collection.SetGameVar("dog", "woof");
 Collection.SetGameVar("animals", 2);
-Collection.GetGameVars().ShouldBe(new Dictionary<string, object?>() {
+JsonSerializer.Serialize(Collection.GetGameVars()).ShouldBe(JsonSerializer.Serialize(new JsonObject() {
     ["cat"] = "meow",
     ["dog"] = "woof",
     ["animals"] = 2,
-});
+}));
 
 GameVar<string> Cat = new(Collection, "cat", () => "");
 Cat.Get().ShouldBe("meow");

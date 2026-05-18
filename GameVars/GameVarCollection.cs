@@ -1,4 +1,14 @@
-﻿namespace GameVars;
+﻿#if NET
+using System.Diagnostics.CodeAnalysis;
+#endif
+using System.Collections;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
+using System.Text.Encodings.Web;
+using System.Text.Json.Serialization.Metadata;
+
+namespace GameVars;
 
 /// <summary>
 /// A saveable collection of variables.
@@ -6,7 +16,7 @@
 /// <remarks>
 /// Note: Collections are <b>NOT</b> thread-safe.
 /// </remarks>
-public sealed class GameVarCollection {
+public sealed class GameVarCollection : IEnumerable<KeyValuePair<string, JsonNode?>> {
     /// <summary>
     /// Invoked whenever a game var in this collection is changed.<br/>
     /// Note: The value may be the same as before.
@@ -17,7 +27,26 @@ public sealed class GameVarCollection {
     /// </summary>
     public delegate void OnGameVarChangedEventHandler(string GameVarName);
 
-    private Dictionary<string, object?> GameVars = [];
+    private JsonObject GameVars = [];
+
+    /// <summary>
+    /// Default <see cref="JsonSerializerOptions"/>.
+    /// </summary>
+    internal static JsonSerializerOptions DefaultJsonOptions {
+#if NET
+        [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
+        [RequiresDynamicCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
+#endif
+        get => field ??= new() {
+            NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals | JsonNumberHandling.AllowReadingFromString,
+            AllowTrailingCommas = true,
+            IncludeFields = true,
+            NewLine = "\n",
+            ReadCommentHandling = JsonCommentHandling.Skip,
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+            TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
+        };
+    }
 
     /// <summary>
     /// Creates a new saveable collection of variables which is empty.
@@ -27,32 +56,25 @@ public sealed class GameVarCollection {
     /// <summary>
     /// Creates a new saveable collection of variables with the given initial variables.
     /// </summary>
-    public GameVarCollection(IReadOnlyDictionary<string, object?> GameVars) {
+    public GameVarCollection(JsonObject GameVars) {
         SetGameVars(GameVars);
     }
     /// <summary>
-    /// Returns a read-only interface over the game vars in this collection.
+    /// Returns a copy of the game vars in this collection.
     /// </summary>
-    public IReadOnlyDictionary<string, object?> GetGameVars() {
-        return GameVars;
+    public JsonObject GetGameVars() {
+        return (JsonObject)GameVars.DeepClone();
     }
     /// <summary>
     /// Replaces the game vars in this collection with the given game vars.
     /// </summary>
-    public void SetGameVars(IReadOnlyDictionary<string, object?> GameVars) {
+    public void SetGameVars(JsonObject GameVars) {
         HashSet<string> ChangedGameVarNames = [
             .. this.GameVars.Select(GameVar => GameVar.Key),
             .. GameVars.Select(GameVar => GameVar.Key),
         ];
 
-#if NET
-        this.GameVars = GameVars.ToDictionary();
-#else
-        this.GameVars = new Dictionary<string, object?>(GameVars.Count);
-        foreach (KeyValuePair<string, object?> KeyValuePair in GameVars) {
-            this.GameVars[KeyValuePair.Key] = KeyValuePair.Value;
-        }
-#endif
+        this.GameVars = (JsonObject)GameVars.DeepClone();
 
         foreach (string ChangedGameVarName in ChangedGameVarNames) {
             OnGameVarChanged?.Invoke(ChangedGameVarName);
@@ -61,27 +83,100 @@ public sealed class GameVarCollection {
     /// <summary>
     /// Gets the value of the given game var, or a value created from <paramref name="DefaultValueFactory"/>.
     /// </summary>
+#if NET
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
+    [RequiresDynamicCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
+#endif
     public T GetGameVar<T>(string GameVarName, Func<T> DefaultValueFactory) {
-        if (GameVars.TryGetValue(GameVarName, out object? Value)) {
-            return (T)Value!;
+        if (GameVars.TryGetPropertyValue(GameVarName, out JsonNode? Value)) {
+            return JsonSerializer.Deserialize<T>(Value, DefaultJsonOptions)!;
+        }
+        return DefaultValueFactory();
+    }
+    /// <summary>
+    /// Gets the value of the given game var, or a value created from <paramref name="DefaultValueFactory"/>.
+    /// </summary>
+    public T GetGameVar<T>(string GameVarName, Func<T> DefaultValueFactory, JsonTypeInfo<T> TypeInfo) {
+        if (GameVars.TryGetPropertyValue(GameVarName, out JsonNode? Value)) {
+            return JsonSerializer.Deserialize(Value, TypeInfo)!;
+        }
+        return DefaultValueFactory();
+    }
+    /// <summary>
+    /// Gets the value of the given game var, or a value created from <paramref name="DefaultValueFactory"/>.
+    /// </summary>
+    public JsonNode? GetGameVar(string GameVarName, Func<JsonNode?> DefaultValueFactory) {
+        if (GameVars.TryGetPropertyValue(GameVarName, out JsonNode? Value)) {
+            return Value;
         }
         return DefaultValueFactory();
     }
     /// <summary>
     /// Gets the value of the given game var, or <paramref name="DefaultValue"/>.
     /// </summary>
+#if NET
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
+    [RequiresDynamicCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
+#endif
     public T GetGameVar<T>(string GameVarName, T DefaultValue) {
-        if (GameVars.TryGetValue(GameVarName, out object? Value)) {
-            return (T)Value!;
+        if (GameVars.TryGetPropertyValue(GameVarName, out JsonNode? Value)) {
+            return JsonSerializer.Deserialize<T>(Value, DefaultJsonOptions)!;
+        }
+        return DefaultValue;
+    }
+    /// <summary>
+    /// Gets the value of the given game var, or <paramref name="DefaultValue"/>.
+    /// </summary>
+    public T GetGameVar<T>(string GameVarName, T DefaultValue, JsonTypeInfo<T> TypeInfo) {
+        if (GameVars.TryGetPropertyValue(GameVarName, out JsonNode? Value)) {
+            return JsonSerializer.Deserialize(Value, TypeInfo)!;
+        }
+        return DefaultValue;
+    }
+    /// <summary>
+    /// Gets the value of the given game var, or <paramref name="DefaultValue"/>.
+    /// </summary>
+    public JsonNode? GetGameVar(string GameVarName, JsonNode? DefaultValue) {
+        if (GameVars.TryGetPropertyValue(GameVarName, out JsonNode? Value)) {
+            return Value;
         }
         return DefaultValue;
     }
     /// <summary>
     /// Sets the value of the given game var.
     /// </summary>
-    public void SetGameVar(string GameVarName, object? Value) {
+#if NET
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
+    [RequiresDynamicCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
+#endif
+    public void SetGameVar<T>(string GameVarName, T Value) {
+        JsonNode? NodeValue = JsonSerializer.SerializeToNode(Value, DefaultJsonOptions);
+        SetGameVar(GameVarName, NodeValue);
+    }
+    /// <summary>
+    /// Sets the value of the given game var.
+    /// </summary>
+    public void SetGameVar<T>(string GameVarName, T Value, JsonTypeInfo<T> TypeInfo) {
+        JsonNode? NodeValue = JsonSerializer.SerializeToNode(Value, TypeInfo);
+        SetGameVar(GameVarName, NodeValue);
+    }
+    /// <summary>
+    /// Sets the value of the given game var.
+    /// </summary>
+    public void SetGameVar(string GameVarName, JsonNode? Value) {
         GameVars[GameVarName] = Value;
 
         OnGameVarChanged?.Invoke(GameVarName);
+    }
+    /// <summary>
+    /// Returns an enumerator that enumerates through the game vars in the collection.
+    /// </summary>
+    public IEnumerator<KeyValuePair<string, JsonNode?>> GetEnumerator() {
+        return GameVars.GetEnumerator();
+    }
+
+    /// <inheritdoc/>
+    IEnumerator IEnumerable.GetEnumerator() {
+        return GetEnumerator();
     }
 }

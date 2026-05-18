@@ -1,4 +1,8 @@
-﻿namespace GameVars;
+﻿#if NET
+using System.Diagnostics.CodeAnalysis;
+#endif
+
+namespace GameVars;
 
 /// <summary>
 /// An interface to a game var in a <see cref="GameVarCollection"/>.

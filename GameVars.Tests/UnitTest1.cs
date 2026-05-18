@@ -1,4 +1,7 @@
-﻿namespace GameVars.Tests;
+﻿using System.Text.Json;
+using System.Text.Json.Nodes;
+
+namespace GameVars.Tests;
 
 public class UnitTest1 {
     [Fact]
@@ -7,11 +10,11 @@ public class UnitTest1 {
         Collection.SetGameVar("cat", "meow");
         Collection.SetGameVar("dog", "woof");
         Collection.SetGameVar("animals", 2);
-        Collection.GetGameVars().ShouldBe(new Dictionary<string, object?>() {
+        JsonSerializer.Serialize(Collection.GetGameVars()).ShouldBe(JsonSerializer.Serialize(new JsonObject() {
             ["cat"] = "meow",
             ["dog"] = "woof",
             ["animals"] = 2,
-        });
+        }));
 
         GameVar<string> Cat = new(Collection, "cat", () => "");
         Cat.Get().ShouldBe("meow");
@@ -48,21 +51,21 @@ public class UnitTest1 {
     [Fact]
     public void GameVarCollectionSetGameVarsTest() {
         GameVarCollection Collection = new();
-        Collection.SetGameVars(new Dictionary<string, object?>() {
+        Collection.SetGameVars(new JsonObject() {
             ["a"] = 1,
             ["b"] = 2,
         });
-        Collection.GetGameVars().ShouldBe(new Dictionary<string, object?>() {
+        JsonSerializer.Serialize(Collection.GetGameVars()).ShouldBe(JsonSerializer.Serialize(new JsonObject() {
             ["a"] = 1,
             ["b"] = 2,
-        });
+        }));
         Collection.GetGameVar("a", 7).ShouldBe(1);
         Collection.GetGameVar("b", 7).ShouldBe(2);
     }
     [Fact]
     public void GameVarGetSetTest() {
         GameVarCollection Collection = new();
-        Collection.SetGameVars(new Dictionary<string, object?>() {
+        Collection.SetGameVars(new JsonObject() {
             ["a"] = 1,
             ["b"] = 2,
         });
@@ -74,7 +77,7 @@ public class UnitTest1 {
     [Fact]
     public void GameVarSlimGetSetTest() {
         GameVarCollection Collection = new();
-        Collection.SetGameVars(new Dictionary<string, object?>() {
+        Collection.SetGameVars(new JsonObject() {
             ["a"] = 1,
             ["b"] = 2,
         });
@@ -86,7 +89,7 @@ public class UnitTest1 {
     [Fact]
     public void GameVarCacheTest() {
         GameVarCollection Collection = new();
-        Collection.SetGameVars(new Dictionary<string, object?>() {
+        Collection.SetGameVars(new JsonObject() {
             ["a"] = 1,
             ["b"] = 2,
         });
@@ -99,7 +102,7 @@ public class UnitTest1 {
     [Fact]
     public void GameVarSlimCacheTest() {
         GameVarCollection Collection = new();
-        Collection.SetGameVars(new Dictionary<string, object?>() {
+        Collection.SetGameVars(new JsonObject() {
             ["a"] = 1,
             ["b"] = 2,
         });
@@ -111,7 +114,7 @@ public class UnitTest1 {
     }
     [Fact]
     public void GameVarIncrementTest() {
-        GameVarCollection Collection = new(new Dictionary<string, object?>() {
+        GameVarCollection Collection = new(new JsonObject() {
             ["a"] = 1,
             ["b"] = 2,
         });
