@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="GameVars.Tests/GameVars.Tests.csproj" Id="f7b5b402-5086-44d3-baf8-edb3bf601e00" />
+  <Project Path="GameVars/GameVars.csproj" />
+</Solution>

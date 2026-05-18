@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <VersionPrefix>1.0</VersionPrefix>
+        <TargetFrameworks>netstandard2.0;netstandard2.1;net8.0;net9.0;net10.0</TargetFrameworks>
+        <LangVersion>latest</LangVersion>
+        <RootNamespace>GameVars</RootNamespace>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        
+        <!-- IDE0290: Use primary constructor -->
+        <NoWarn>IDE0290</NoWarn>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <IsAotCompatible>true</IsAotCompatible>
+        <IsTrimmable>true</IsTrimmable>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <Title>GameVars</Title>
+        <Description>Saveable collections of variables.</Description>
+        <PackageProjectUrl>https://github.com/Joy-less/GameVars</PackageProjectUrl>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <RepositoryUrl>https://github.com/Joy-less/GameVars</RepositoryUrl>
+        <PackageTags>game variables; JSON</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="../README.md">
+            <Pack>True</Pack>
+            <PackagePath>/</PackagePath>
+        </None>
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="System.Text.Json" Version="10.0.8" />
+    </ItemGroup>
+</Project>
