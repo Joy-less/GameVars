@@ -37,12 +37,12 @@ public sealed class GameVarSlimAot<T> : IGameVar<T> {
     /// Gets the value of the given game var, or a value created from <see cref="DefaultValueFactory"/>.
     /// </summary>
     public T Get() {
-        return Collection.GetGameVar(Name, DefaultValueFactory, TypeInfo);
+        return Collection.Get(Name, DefaultValueFactory, TypeInfo);
     }
     /// <summary>
     /// Sets the value of the given game var.
     /// </summary>
     public void Set(T Value) {
-        Collection.SetGameVar(Name, Value, TypeInfo);
+        Collection.Set(Name, Value, TypeInfo);
     }
 }

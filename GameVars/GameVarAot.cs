@@ -46,7 +46,7 @@ public sealed class GameVarAot<T> : IGameVar<T> {
         this.DefaultValueFactory = DefaultValueFactory;
         this.TypeInfo = TypeInfo;
 
-        CachedValue = Collection.GetGameVar(Name, DefaultValueFactory, TypeInfo);
+        CachedValue = Collection.Get(Name, DefaultValueFactory, TypeInfo);
 
         Collection.OnGameVarChanged += OnGameVarChangedHandler;
     }
@@ -68,12 +68,12 @@ public sealed class GameVarAot<T> : IGameVar<T> {
     public void Set(T Value) {
         CachedValue = Value;
 
-        Collection.SetGameVar(Name, Value, TypeInfo);
+        Collection.Set(Name, Value, TypeInfo);
     }
 
     private void OnGameVarChangedHandler(string GameVarName) {
         if (GameVarName == Name) {
-            CachedValue = Collection.GetGameVar(Name, DefaultValueFactory, TypeInfo);
+            CachedValue = Collection.Get(Name, DefaultValueFactory, TypeInfo);
             OnChanged?.Invoke();
         }
     }

@@ -61,18 +61,18 @@ public sealed class GameVarCollection : ICollection<KeyValuePair<string, JsonNod
     /// Creates a collection of variables with the given initial variables.
     /// </summary>
     public GameVarCollection(JsonObject GameVars) {
-        SetGameVars(GameVars);
+        SetAll(GameVars);
     }
     /// <summary>
     /// Returns a copy of the game vars in this collection.
     /// </summary>
-    public JsonObject GetGameVars() {
+    public JsonObject GetAll() {
         return (JsonObject)GameVars.DeepClone();
     }
     /// <summary>
     /// Replaces the game vars in this collection with the given game vars.
     /// </summary>
-    public void SetGameVars(JsonObject GameVars) {
+    public void SetAll(JsonObject GameVars) {
         HashSet<string> ChangedGameVarNames = [
             .. this.GameVars.Select(GameVar => GameVar.Key),
             .. GameVars.Select(GameVar => GameVar.Key),
@@ -87,7 +87,7 @@ public sealed class GameVarCollection : ICollection<KeyValuePair<string, JsonNod
     /// <summary>
     /// Clears all the game vars in this collection.
     /// </summary>
-    public void ClearGameVars() {
+    public void Clear() {
         HashSet<string> ChangedGameVarNames = [
             .. GameVars.Select(GameVar => GameVar.Key),
         ];
@@ -101,11 +101,20 @@ public sealed class GameVarCollection : ICollection<KeyValuePair<string, JsonNod
     /// <summary>
     /// Gets the value of the given game var, or a value created from <paramref name="DefaultValueFactory"/>.
     /// </summary>
-    public JsonNode? GetGameVar(string GameVarName, Func<JsonNode?> DefaultValueFactory) {
+    public JsonNode? Get(string GameVarName, Func<JsonNode?> DefaultValueFactory) {
         if (GameVars.TryGetPropertyValue(GameVarName, out JsonNode? Value)) {
             return Value;
         }
         return DefaultValueFactory();
+    }
+    /// <summary>
+    /// Gets the value of the given game var, or <paramref name="DefaultValue"/>.
+    /// </summary>
+    public JsonNode? Get(string GameVarName, JsonNode? DefaultValue) {
+        if (GameVars.TryGetPropertyValue(GameVarName, out JsonNode? Value)) {
+            return Value;
+        }
+        return DefaultValue;
     }
     /// <summary>
     /// Gets the value of the given game var, or a value created from <paramref name="DefaultValueFactory"/>.
@@ -114,16 +123,29 @@ public sealed class GameVarCollection : ICollection<KeyValuePair<string, JsonNod
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     [RequiresDynamicCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
 #endif
-    public T GetGameVar<T>(string GameVarName, Func<T> DefaultValueFactory) {
+    public T Get<T>(string GameVarName, Func<T> DefaultValueFactory) {
         if (GameVars.TryGetPropertyValue(GameVarName, out JsonNode? Value)) {
             return JsonSerializer.Deserialize<T>(Value, DefaultJsonOptions)!;
         }
         return DefaultValueFactory();
     }
     /// <summary>
+    /// Gets the value of the given game var, or <paramref name="DefaultValue"/>.
+    /// </summary>
+#if NET
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
+    [RequiresDynamicCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
+#endif
+    public T Get<T>(string GameVarName, T DefaultValue) {
+        if (GameVars.TryGetPropertyValue(GameVarName, out JsonNode? Value)) {
+            return JsonSerializer.Deserialize<T>(Value, DefaultJsonOptions)!;
+        }
+        return DefaultValue;
+    }
+    /// <summary>
     /// Gets the value of the given game var, or a value created from <paramref name="DefaultValueFactory"/>.
     /// </summary>
-    public T GetGameVar<T>(string GameVarName, Func<T> DefaultValueFactory, JsonTypeInfo<T> TypeInfo) {
+    public T Get<T>(string GameVarName, Func<T> DefaultValueFactory, JsonTypeInfo<T> TypeInfo) {
         if (GameVars.TryGetPropertyValue(GameVarName, out JsonNode? Value)) {
             return JsonSerializer.Deserialize(Value, TypeInfo)!;
         }
@@ -132,29 +154,7 @@ public sealed class GameVarCollection : ICollection<KeyValuePair<string, JsonNod
     /// <summary>
     /// Gets the value of the given game var, or <paramref name="DefaultValue"/>.
     /// </summary>
-    public JsonNode? GetGameVar(string GameVarName, JsonNode? DefaultValue) {
-        if (GameVars.TryGetPropertyValue(GameVarName, out JsonNode? Value)) {
-            return Value;
-        }
-        return DefaultValue;
-    }
-    /// <summary>
-    /// Gets the value of the given game var, or <paramref name="DefaultValue"/>.
-    /// </summary>
-#if NET
-    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
-    [RequiresDynamicCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
-#endif
-    public T GetGameVar<T>(string GameVarName, T DefaultValue) {
-        if (GameVars.TryGetPropertyValue(GameVarName, out JsonNode? Value)) {
-            return JsonSerializer.Deserialize<T>(Value, DefaultJsonOptions)!;
-        }
-        return DefaultValue;
-    }
-    /// <summary>
-    /// Gets the value of the given game var, or <paramref name="DefaultValue"/>.
-    /// </summary>
-    public T GetGameVar<T>(string GameVarName, T DefaultValue, JsonTypeInfo<T> TypeInfo) {
+    public T Get<T>(string GameVarName, T DefaultValue, JsonTypeInfo<T> TypeInfo) {
         if (GameVars.TryGetPropertyValue(GameVarName, out JsonNode? Value)) {
             return JsonSerializer.Deserialize(Value, TypeInfo)!;
         }
@@ -163,7 +163,7 @@ public sealed class GameVarCollection : ICollection<KeyValuePair<string, JsonNod
     /// <summary>
     /// Sets the value of the given game var.
     /// </summary>
-    public void SetGameVar(string GameVarName, JsonNode? Value) {
+    public void Set(string GameVarName, JsonNode? Value) {
         GameVars[GameVarName] = Value;
 
         OnGameVarChanged?.Invoke(GameVarName);
@@ -175,21 +175,21 @@ public sealed class GameVarCollection : ICollection<KeyValuePair<string, JsonNod
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     [RequiresDynamicCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
 #endif
-    public void SetGameVar<T>(string GameVarName, T Value) {
+    public void Set<T>(string GameVarName, T Value) {
         JsonNode? NodeValue = JsonSerializer.SerializeToNode(Value, DefaultJsonOptions);
-        SetGameVar(GameVarName, NodeValue);
+        Set(GameVarName, NodeValue);
     }
     /// <summary>
     /// Sets the value of the given game var.
     /// </summary>
-    public void SetGameVar<T>(string GameVarName, T Value, JsonTypeInfo<T> TypeInfo) {
+    public void Set<T>(string GameVarName, T Value, JsonTypeInfo<T> TypeInfo) {
         JsonNode? NodeValue = JsonSerializer.SerializeToNode(Value, TypeInfo);
-        SetGameVar(GameVarName, NodeValue);
+        Set(GameVarName, NodeValue);
     }
     /// <summary>
     /// Removes the given game var from the collection.
     /// </summary>
-    public void RemoveGameVar(string GameVarName) {
+    public void Remove(string GameVarName) {
         GameVars.Remove(GameVarName);
 
         OnGameVarChanged?.Invoke(GameVarName);
@@ -197,7 +197,7 @@ public sealed class GameVarCollection : ICollection<KeyValuePair<string, JsonNod
     /// <summary>
     /// Returns whether this collection has a value for the given game var.
     /// </summary>
-    public bool HasGameVar(string GameVarName) {
+    public bool Contains(string GameVarName) {
         return GameVars.ContainsKey(GameVarName);
     }
     /// <summary>
@@ -215,9 +215,9 @@ public sealed class GameVarCollection : ICollection<KeyValuePair<string, JsonNod
     object ICollection.SyncRoot => this;
 
     /// <inheritdoc/>
-    void ICollection<KeyValuePair<string, JsonNode?>>.Add(KeyValuePair<string, JsonNode?> Item) => SetGameVar(Item.Key, Item.Value);
+    void ICollection<KeyValuePair<string, JsonNode?>>.Add(KeyValuePair<string, JsonNode?> Item) => Set(Item.Key, Item.Value);
     /// <inheritdoc/>
-    void ICollection<KeyValuePair<string, JsonNode?>>.Clear() => ClearGameVars();
+    void ICollection<KeyValuePair<string, JsonNode?>>.Clear() => Clear();
     /// <inheritdoc/>
     bool ICollection<KeyValuePair<string, JsonNode?>>.Contains(KeyValuePair<string, JsonNode?> Item) => GameVars.Contains(Item);
     /// <inheritdoc/>
@@ -225,7 +225,7 @@ public sealed class GameVarCollection : ICollection<KeyValuePair<string, JsonNod
     /// <inheritdoc/>
     bool ICollection<KeyValuePair<string, JsonNode?>>.Remove(KeyValuePair<string, JsonNode?> Item) {
         if (GameVars.Contains(Item)) {
-            RemoveGameVar(Item.Key);
+            Remove(Item.Key);
             return true;
         }
         return false;

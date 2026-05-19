@@ -8,10 +8,10 @@ Collections of variables that can be saved to JSON.
 
 ```cs
 GameVarCollection Collection = new();
-Collection.SetGameVar("cat", "meow");
-Collection.SetGameVar("dog", "woof");
-Collection.SetGameVar("animals", 2);
-JsonSerializer.Serialize(Collection.GetGameVars()).ShouldBe(JsonSerializer.Serialize(new JsonObject() {
+Collection.Set("cat", "meow");
+Collection.Set("dog", "woof");
+Collection.Set("animals", 2);
+JsonSerializer.Serialize(Collection.GetAll()).ShouldBe(JsonSerializer.Serialize(new JsonObject() {
     ["cat"] = "meow",
     ["dog"] = "woof",
     ["animals"] = 2,
@@ -27,7 +27,7 @@ Animals.Get().ShouldBe(2);
 
 GameVar<string> Bird = new(Collection, "bird", () => "");
 Bird.Set("chirp");
-Collection.GetGameVar("bird", () => "").ShouldBe("chirp");
+Collection.Get("bird", () => "").ShouldBe("chirp");
 Animals.Increment();
 Animals.Get().ShouldBe(3);
 
