@@ -27,7 +27,7 @@ public sealed class GameVarCollection : ICollection<KeyValuePair<string, JsonNod
     /// </summary>
     public delegate void OnGameVarChangedEventHandler(string GameVarName);
 
-    private JsonObject GameVars = [];
+    private JsonObject GameVars;
 
     /// <summary>
     /// Default <see cref="JsonSerializerOptions"/>.
@@ -56,12 +56,13 @@ public sealed class GameVarCollection : ICollection<KeyValuePair<string, JsonNod
     /// Creates a collection of variables which is empty.
     /// </summary>
     public GameVarCollection() {
+        GameVars = [];
     }
     /// <summary>
     /// Creates a collection of variables with the given initial variables.
     /// </summary>
     public GameVarCollection(JsonObject GameVars) {
-        SetAll(GameVars);
+        this.GameVars = (JsonObject)GameVars.DeepClone();
     }
     /// <summary>
     /// Returns a copy of the game vars in this collection.
