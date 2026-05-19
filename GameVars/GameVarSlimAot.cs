@@ -4,7 +4,7 @@ namespace GameVars;
 
 /// <summary>
 /// An interface to a game var in a <see cref="GameVarCollection"/>, with no caching and no event handlers.<br/>
-/// Unlike <see cref="GameVarSlim{T}"/>, <see cref="GameVarSlimAot{T}"/> is trimmable due to using <see cref="JsonTypeInfo{T}"/>.
+/// Unlike <see cref="GameVarSlim{T}"/>, <see cref="GameVarSlimAot{T}"/> supports NativeAOT and trimming due to using <see cref="JsonTypeInfo{T}"/>.
 /// </summary>
 public sealed class GameVarSlimAot<T> : IGameVar<T> {
     /// <summary>
