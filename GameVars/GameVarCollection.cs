@@ -16,7 +16,7 @@ namespace GameVars;
 /// <remarks>
 /// Note: Collections are <b>NOT</b> thread-safe.
 /// </remarks>
-public sealed class GameVarCollection : IReadOnlyCollection<KeyValuePair<string, JsonNode?>> {
+public sealed class GameVarCollection : ICollection<KeyValuePair<string, JsonNode?>>, ICollection, IReadOnlyCollection<KeyValuePair<string, JsonNode?>> {
     /// <summary>
     /// Invoked whenever a game var in this collection is changed.<br/>
     /// Note: The value may be the same as before.
@@ -79,6 +79,20 @@ public sealed class GameVarCollection : IReadOnlyCollection<KeyValuePair<string,
         ];
 
         this.GameVars = (JsonObject)GameVars.DeepClone();
+
+        foreach (string ChangedGameVarName in ChangedGameVarNames) {
+            OnGameVarChanged?.Invoke(ChangedGameVarName);
+        }
+    }
+    /// <summary>
+    /// Clears all the game vars in this collection.
+    /// </summary>
+    public void ClearGameVars() {
+        HashSet<string> ChangedGameVarNames = [
+            .. GameVars.Select(GameVar => GameVar.Key),
+        ];
+
+        GameVars.Clear();
 
         foreach (string ChangedGameVarName in ChangedGameVarNames) {
             OnGameVarChanged?.Invoke(ChangedGameVarName);
@@ -173,6 +187,20 @@ public sealed class GameVarCollection : IReadOnlyCollection<KeyValuePair<string,
         SetGameVar(GameVarName, NodeValue);
     }
     /// <summary>
+    /// Removes the given game var from the collection.
+    /// </summary>
+    public void RemoveGameVar(string GameVarName) {
+        GameVars.Remove(GameVarName);
+
+        OnGameVarChanged?.Invoke(GameVarName);
+    }
+    /// <summary>
+    /// Returns whether this collection has a value for the given game var.
+    /// </summary>
+    public bool HasGameVar(string GameVarName) {
+        return GameVars.ContainsKey(GameVarName);
+    }
+    /// <summary>
     /// Returns an enumerator that enumerates through the game vars in the collection.
     /// </summary>
     public IEnumerator<KeyValuePair<string, JsonNode?>> GetEnumerator() {
@@ -180,7 +208,30 @@ public sealed class GameVarCollection : IReadOnlyCollection<KeyValuePair<string,
     }
 
     /// <inheritdoc/>
-    IEnumerator IEnumerable.GetEnumerator() {
-        return GetEnumerator();
+    bool ICollection<KeyValuePair<string, JsonNode?>>.IsReadOnly => false;
+    /// <inheritdoc/>
+    bool ICollection.IsSynchronized => false;
+    /// <inheritdoc/>
+    object ICollection.SyncRoot => this;
+
+    /// <inheritdoc/>
+    void ICollection<KeyValuePair<string, JsonNode?>>.Add(KeyValuePair<string, JsonNode?> Item) => SetGameVar(Item.Key, Item.Value);
+    /// <inheritdoc/>
+    void ICollection<KeyValuePair<string, JsonNode?>>.Clear() => ClearGameVars();
+    /// <inheritdoc/>
+    bool ICollection<KeyValuePair<string, JsonNode?>>.Contains(KeyValuePair<string, JsonNode?> Item) => GameVars.Contains(Item);
+    /// <inheritdoc/>
+    void ICollection<KeyValuePair<string, JsonNode?>>.CopyTo(KeyValuePair<string, JsonNode?>[] Array, int ArrayIndex) => GameVars.ToArray().CopyTo(Array, ArrayIndex);
+    /// <inheritdoc/>
+    bool ICollection<KeyValuePair<string, JsonNode?>>.Remove(KeyValuePair<string, JsonNode?> Item) {
+        if (GameVars.Contains(Item)) {
+            RemoveGameVar(Item.Key);
+            return true;
+        }
+        return false;
     }
+    /// <inheritdoc/>
+    void ICollection.CopyTo(Array Array, int ArrayIndex) => GameVars.ToArray().CopyTo(Array, ArrayIndex);
+    /// <inheritdoc/>
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }
