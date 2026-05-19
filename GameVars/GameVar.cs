@@ -11,7 +11,7 @@ namespace GameVars;
 [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
 [RequiresDynamicCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
 #endif
-public sealed class GameVar<T> : IGameVar<T> {
+public sealed class GameVar<T> : IGameVar<T>, IDisposable {
     /// <summary>
     /// The collection of game vars containing the game var.
     /// </summary>
@@ -51,9 +51,11 @@ public sealed class GameVar<T> : IGameVar<T> {
         Collection.OnGameVarChanged += OnGameVarChangedHandler;
     }
     /// <summary>
-    /// Clears the event handlers from the collection.
+    /// Clears event handlers from the collection.<br/>
+    /// Note: You don't need to call this method if you are about to discard the collection,
+    /// since the event handlers will be discarded along with the collection.
     /// </summary>
-    ~GameVar() {
+    public void Dispose() {
         Collection.OnGameVarChanged -= OnGameVarChangedHandler;
     }
     /// <summary>

@@ -6,7 +6,7 @@ namespace GameVars;
 /// An interface to a game var in a <see cref="GameVarCollection"/>, with caching and event handlers.<br/>
 /// Unlike <see cref="GameVar{T}"/>, <see cref="GameVarAot{T}"/> supports NativeAOT and trimming due to using <see cref="JsonTypeInfo{T}"/>.
 /// </summary>
-public sealed class GameVarAot<T> : IGameVar<T> {
+public sealed class GameVarAot<T> : IGameVar<T>, IDisposable {
     /// <summary>
     /// The collection of game vars containing the game var.
     /// </summary>
@@ -51,9 +51,11 @@ public sealed class GameVarAot<T> : IGameVar<T> {
         Collection.OnGameVarChanged += OnGameVarChangedHandler;
     }
     /// <summary>
-    /// Clears the event handlers from the collection.
+    /// Clears event handlers from the collection.<br/>
+    /// Note: You don't need to call this method if you are about to discard the collection,
+    /// since the event handlers will be discarded along with the collection.
     /// </summary>
-    ~GameVarAot() {
+    public void Dispose() {
         Collection.OnGameVarChanged -= OnGameVarChangedHandler;
     }
     /// <summary>
