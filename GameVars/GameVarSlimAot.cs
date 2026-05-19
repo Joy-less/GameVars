@@ -45,10 +45,4 @@ public sealed class GameVarSlimAot<T> : IGameVar<T> {
     public void Set(T Value) {
         Collection.SetGameVar(Name, Value, TypeInfo);
     }
-    /// <summary>
-    /// Sets the value of the given game var.
-    /// </summary>
-    public void Set(T Value, JsonTypeInfo<T> TypeInfo) {
-        Collection.SetGameVar(Name, Value, TypeInfo);
-    }
 }
