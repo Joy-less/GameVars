@@ -62,19 +62,19 @@ public sealed class GameVarCollection : ICollection<KeyValuePair<string, JsonNod
     /// Creates a collection of variables with the given initial variables.
     /// </summary>
     public GameVarCollection(JsonObject GameVars) {
-        this.GameVars = (JsonObject)GameVars.DeepClone();
+        this.GameVars = GameVars;
     }
     /// <summary>
     /// Creates a collection of variables with initial variables copied from this collection.
     /// </summary>
     public GameVarCollection Clone() {
-        return new GameVarCollection(GameVars);
+        return new GameVarCollection((JsonObject)GameVars.DeepClone());
     }
     /// <summary>
-    /// Returns a copy of the game vars in this collection.
+    /// Returns the game vars in this collection.
     /// </summary>
     public JsonObject GetAll() {
-        return (JsonObject)GameVars.DeepClone();
+        return GameVars;
     }
     /// <summary>
     /// Replaces the game vars in this collection with the given game vars.
@@ -85,7 +85,7 @@ public sealed class GameVarCollection : ICollection<KeyValuePair<string, JsonNod
             .. GameVars.Select(GameVar => GameVar.Key),
         ];
 
-        this.GameVars = (JsonObject)GameVars.DeepClone();
+        this.GameVars = GameVars;
 
         foreach (string ChangedGameVarName in ChangedGameVarNames) {
             OnGameVarChanged?.Invoke(ChangedGameVarName);
