@@ -230,6 +230,23 @@ public sealed class GameVarCollection : ICollection<KeyValuePair<string, JsonNod
         return JsonSerializer.Serialize(GameVars, TypeInfo);
     }
 
+    /// <summary>
+    /// Converts a string containing a JSON object to a collection of game vars.
+    /// </summary>
+#if NET
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
+    [RequiresDynamicCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
+#endif
+    public static GameVarCollection Deserialize(scoped ReadOnlySpan<char> Input, JsonSerializerOptions? JsonOptions = null) {
+        return new GameVarCollection(JsonSerializer.Deserialize<JsonObject>(Input, JsonOptions ?? DefaultJsonOptions) ?? []);
+    }
+    /// <summary>
+    /// Converts a string containing a JSON object to a collection of game vars.
+    /// </summary>
+    public static GameVarCollection Deserialize(scoped ReadOnlySpan<char> Input, JsonTypeInfo<JsonObject> TypeInfo) {
+        return new GameVarCollection(JsonSerializer.Deserialize(Input, TypeInfo) ?? []);
+    }
+
     /// <inheritdoc/>
     bool ICollection<KeyValuePair<string, JsonNode?>>.IsReadOnly => false;
     /// <inheritdoc/>

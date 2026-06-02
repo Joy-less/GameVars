@@ -86,7 +86,7 @@ public class UnitTest1 {
         }));
     }
     [Fact]
-    public void GameVarCollectionSerializeTest() {
+    public void GameVarCollectionSerializeDeserializeTest() {
         GameVarCollection Collection = new(new JsonObject() {
             ["a"] = 1,
             ["b"] = 2,
@@ -95,6 +95,13 @@ public class UnitTest1 {
             },
         });
         Collection.Serialize().ShouldBe(JsonSerializer.Serialize(new JsonObject() {
+            ["a"] = 1,
+            ["b"] = 2,
+            ["c"] = new JsonObject() {
+                ["d"] = true,
+            },
+        }));
+        JsonSerializer.Serialize(GameVarCollection.Deserialize(Collection.Serialize()).GetAll()).ShouldBe(JsonSerializer.Serialize(new JsonObject() {
             ["a"] = 1,
             ["b"] = 2,
             ["c"] = new JsonObject() {
