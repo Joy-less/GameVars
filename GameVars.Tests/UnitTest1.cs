@@ -68,6 +68,41 @@ public class UnitTest1 {
         Collection.Get("b", 7).ShouldBe(2);
     }
     [Fact]
+    public void GameVarCollectionCloneTest() {
+        GameVarCollection Collection = new(new JsonObject() {
+            ["a"] = 1,
+            ["b"] = 2,
+            ["c"] = new JsonObject() {
+                ["d"] = true,
+            },
+        });
+        GameVarCollection Collection2 = Collection.Clone();
+        JsonSerializer.Serialize(Collection2.GetAll()).ShouldBe(JsonSerializer.Serialize(new JsonObject() {
+            ["a"] = 1,
+            ["b"] = 2,
+            ["c"] = new JsonObject() {
+                ["d"] = true,
+            },
+        }));
+    }
+    [Fact]
+    public void GameVarCollectionSerializeTest() {
+        GameVarCollection Collection = new(new JsonObject() {
+            ["a"] = 1,
+            ["b"] = 2,
+            ["c"] = new JsonObject() {
+                ["d"] = true,
+            },
+        });
+        Collection.Serialize().ShouldBe(JsonSerializer.Serialize(new JsonObject() {
+            ["a"] = 1,
+            ["b"] = 2,
+            ["c"] = new JsonObject() {
+                ["d"] = true,
+            },
+        }));
+    }
+    [Fact]
     public void GameVarGetSetTest() {
         GameVarCollection Collection = new();
         Collection.SetAll(new JsonObject() {
@@ -127,23 +162,5 @@ public class UnitTest1 {
         GameVarA.Increment();
         Collection.Get("a", 0).ShouldBe(2);
         GameVarA.Get().ShouldBe(2);
-    }
-    [Fact]
-    public void GameVarCloneTest() {
-        GameVarCollection Collection = new(new JsonObject() {
-            ["a"] = 1,
-            ["b"] = 2,
-            ["c"] = new JsonObject() {
-                ["d"] = true,
-            },
-        });
-        GameVarCollection Collection2 = Collection.Clone();
-        JsonSerializer.Serialize(Collection2.GetAll()).ShouldBe(JsonSerializer.Serialize(new JsonObject() {
-            ["a"] = 1,
-            ["b"] = 2,
-            ["c"] = new JsonObject() {
-                ["d"] = true,
-            },
-        }));
     }
 }

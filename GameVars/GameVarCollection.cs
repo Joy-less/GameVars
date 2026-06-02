@@ -213,6 +213,22 @@ public sealed class GameVarCollection : ICollection<KeyValuePair<string, JsonNod
     public IEnumerator<KeyValuePair<string, JsonNode?>> GetEnumerator() {
         return GameVars.GetEnumerator();
     }
+    /// <summary>
+    /// Converts the collection of game vars to a string containing a JSON object.
+    /// </summary>
+#if NET
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
+    [RequiresDynamicCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
+#endif
+    public string Serialize(JsonSerializerOptions? JsonOptions = null) {
+        return JsonSerializer.Serialize(GameVars, JsonOptions ?? DefaultJsonOptions);
+    }
+    /// <summary>
+    /// Converts the collection of game vars to a string containing a JSON object.
+    /// </summary>
+    public string Serialize(JsonTypeInfo<JsonObject> TypeInfo) {
+        return JsonSerializer.Serialize(GameVars, TypeInfo);
+    }
 
     /// <inheritdoc/>
     bool ICollection<KeyValuePair<string, JsonNode?>>.IsReadOnly => false;
