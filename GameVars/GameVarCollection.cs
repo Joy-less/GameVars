@@ -65,6 +65,12 @@ public sealed class GameVarCollection : ICollection<KeyValuePair<string, JsonNod
         this.GameVars = (JsonObject)GameVars.DeepClone();
     }
     /// <summary>
+    /// Creates a collection of variables with initial variables copied from this collection.
+    /// </summary>
+    public GameVarCollection Clone() {
+        return new GameVarCollection(GameVars);
+    }
+    /// <summary>
     /// Returns a copy of the game vars in this collection.
     /// </summary>
     public JsonObject GetAll() {

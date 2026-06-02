@@ -128,4 +128,22 @@ public class UnitTest1 {
         Collection.Get("a", 0).ShouldBe(2);
         GameVarA.Get().ShouldBe(2);
     }
+    [Fact]
+    public void GameVarCloneTest() {
+        GameVarCollection Collection = new(new JsonObject() {
+            ["a"] = 1,
+            ["b"] = 2,
+            ["c"] = new JsonObject() {
+                ["d"] = true,
+            },
+        });
+        GameVarCollection Collection2 = Collection.Clone();
+        JsonSerializer.Serialize(Collection2.GetAll()).ShouldBe(JsonSerializer.Serialize(new JsonObject() {
+            ["a"] = 1,
+            ["b"] = 2,
+            ["c"] = new JsonObject() {
+                ["d"] = true,
+            },
+        }));
+    }
 }
