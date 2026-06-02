@@ -1,6 +1,7 @@
 ﻿#if NET
 using System.Diagnostics.CodeAnalysis;
 #endif
+using System.Text.Json;
 
 namespace GameVars;
 
@@ -24,6 +25,10 @@ public sealed class GameVar<T> : IGameVar<T>, IDisposable {
     /// A function returning a default value for the game var.
     /// </summary>
     public Func<T> DefaultValueFactory { get; }
+    /// <summary>
+    /// Custom JSON options used when serializing/deserializing the type.
+    /// </summary>
+    public JsonSerializerOptions? JsonOptions { get; }
 
     private T CachedValue;
 
@@ -41,12 +46,13 @@ public sealed class GameVar<T> : IGameVar<T>, IDisposable {
     /// Creates a new interface to a game var in a <see cref="GameVarCollection"/>,
     /// with a cached value of the value of the given game var, or a value created from <paramref name="DefaultValueFactory"/>.
     /// </summary>
-    public GameVar(GameVarCollection Collection, string Name, Func<T> DefaultValueFactory) {
+    public GameVar(GameVarCollection Collection, string Name, Func<T> DefaultValueFactory, JsonSerializerOptions? JsonOptions = null) {
         this.Collection = Collection;
         this.Name = Name;
         this.DefaultValueFactory = DefaultValueFactory;
+        this.JsonOptions = JsonOptions;
 
-        CachedValue = Collection.Get(Name, DefaultValueFactory);
+        CachedValue = Collection.Get(Name, DefaultValueFactory, JsonOptions);
 
         Collection.OnGameVarChanged += OnGameVarChangedHandler;
     }
@@ -70,12 +76,12 @@ public sealed class GameVar<T> : IGameVar<T>, IDisposable {
     public void Set(T Value) {
         CachedValue = Value;
 
-        Collection.Set(Name, Value);
+        Collection.Set(Name, Value, JsonOptions);
     }
 
     private void OnGameVarChangedHandler(string GameVarName) {
         if (GameVarName == Name) {
-            CachedValue = Collection.Get(Name, DefaultValueFactory);
+            CachedValue = Collection.Get(Name, DefaultValueFactory, JsonOptions);
             OnChanged?.Invoke();
         }
     }

@@ -130,9 +130,9 @@ public sealed class GameVarCollection : ICollection<KeyValuePair<string, JsonNod
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     [RequiresDynamicCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
 #endif
-    public T Get<T>(string GameVarName, Func<T> DefaultValueFactory) {
+    public T Get<T>(string GameVarName, Func<T> DefaultValueFactory, JsonSerializerOptions? JsonOptions = null) {
         if (GameVars.TryGetPropertyValue(GameVarName, out JsonNode? Value)) {
-            return JsonSerializer.Deserialize<T>(Value, DefaultJsonOptions)!;
+            return JsonSerializer.Deserialize<T>(Value, JsonOptions ?? DefaultJsonOptions)!;
         }
         return DefaultValueFactory();
     }
@@ -143,9 +143,9 @@ public sealed class GameVarCollection : ICollection<KeyValuePair<string, JsonNod
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     [RequiresDynamicCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
 #endif
-    public T Get<T>(string GameVarName, T DefaultValue) {
+    public T Get<T>(string GameVarName, T DefaultValue, JsonSerializerOptions? JsonOptions = null) {
         if (GameVars.TryGetPropertyValue(GameVarName, out JsonNode? Value)) {
-            return JsonSerializer.Deserialize<T>(Value, DefaultJsonOptions)!;
+            return JsonSerializer.Deserialize<T>(Value, JsonOptions ?? DefaultJsonOptions)!;
         }
         return DefaultValue;
     }
@@ -182,8 +182,8 @@ public sealed class GameVarCollection : ICollection<KeyValuePair<string, JsonNod
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     [RequiresDynamicCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
 #endif
-    public void Set<T>(string GameVarName, T Value) {
-        JsonNode? NodeValue = JsonSerializer.SerializeToNode(Value, DefaultJsonOptions);
+    public void Set<T>(string GameVarName, T Value, JsonSerializerOptions? JsonOptions = null) {
+        JsonNode? NodeValue = JsonSerializer.SerializeToNode(Value, JsonOptions ?? DefaultJsonOptions);
         Set(GameVarName, NodeValue);
     }
     /// <summary>
